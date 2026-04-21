@@ -1,75 +1,22 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Order Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
 
-<h2>Student Registration</h2>
+<h1>Order History</h1>
+<button onclick="loadOrders()">Load Orders</button>
+<table id="ordersTable"></table>
 
-<input id="name" placeholder="Name"><br><br>
-<input id="email" placeholder="Email"><br><br>
-<input id="dob" type="date"><br><br>
-<input id="dept" placeholder="Department"><br><br>
-<input id="phone" placeholder="Phone"><br><br>
+<h2>Insights</h2>
+<button onclick="highestOrder()">Highest Order</button>
+<p id="highest"></p>
 
-<button onclick="addStudent()">Submit</button>
-<button onclick="loadStudents()">Show Data</button>
+<button onclick="activeCustomer()">Most Active Customer</button>
+<p id="active"></p>
 
-<h3>Students List</h3>
-<table border="1" id="table">
-<tr>
-<th>Name</th>
-<th>Email</th>
-<th>DOB</th>
-<th>Dept</th>
-<th>Phone</th>
-</tr>
-</table>
-
-<script>
-function addStudent(){
-    fetch("http://localhost:5000/addStudent",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            name: document.getElementById("name").value,
-            email: document.getElementById("email").value,
-            dob: document.getElementById("dob").value,
-            department: document.getElementById("dept").value,
-            phone: document.getElementById("phone").value
-        })
-    })
-    .then(res=>res.text())
-    .then(data=>alert(data));
-}
-
-function loadStudents(){
-    fetch("http://localhost:5000/students")
-    .then(res=>res.json())
-    .then(data=>{
-        let table = document.getElementById("table");
-
-        // clear old rows
-        table.innerHTML = `
-        <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>DOB</th>
-        <th>Dept</th>
-        <th>Phone</th>
-        </tr>`;
-
-        data.forEach(s=>{
-            table.innerHTML += `
-            <tr>
-            <td>${s.name}</td>
-            <td>${s.email}</td>
-            <td>${s.dob}</td>
-            <td>${s.department}</td>
-            <td>${s.phone}</td>
-            </tr>`;
-        });
-    });
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>

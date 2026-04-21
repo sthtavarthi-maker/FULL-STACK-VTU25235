@@ -1,5 +1,5 @@
 {
-  "name": "student-app",
+  "name": "order-management",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,9 +11,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "mysql": "^2.18.1"
+    "mysql2": "^3.22.0"
   }
 }
