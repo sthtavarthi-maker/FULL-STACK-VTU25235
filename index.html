@@ -1,22 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Order Management</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Payment Simulation</title>
 </head>
 <body>
 
-<h1>Order History</h1>
-<button onclick="loadOrders()">Load Orders</button>
-<table id="ordersTable"></table>
+<h2>Transaction System</h2>
 
-<h2>Insights</h2>
-<button onclick="highestOrder()">Highest Order</button>
-<p id="highest"></p>
+<input id="userId" placeholder="User ID">
+<input id="merchantId" placeholder="Merchant ID">
+<input id="amount" placeholder="Amount">
 
-<button onclick="activeCustomer()">Most Active Customer</button>
-<p id="active"></p>
+<button onclick="pay()">Pay</button>
 
-<script src="script.js"></script>
+<p id="result"></p>
+
+<script>
+async function pay() {
+    const response = await fetch("http://localhost:3000/transfer", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            userId: document.getElementById("userId").value,
+            merchantId: document.getElementById("merchantId").value,
+            amount: document.getElementById("amount").value
+        })
+    });
+
+    const data = await response.json();
+    document.getElementById("result").innerText = data.message;
+}
+</script>
+
 </body>
 </html>

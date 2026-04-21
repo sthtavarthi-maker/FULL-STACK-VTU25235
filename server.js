@@ -1,58 +1,60 @@
 const express = require("express");
-const mysql = require("mysql2");
+const db = require("./db");
 const cors = require("cors");
 
 const app = express();
-app.use(cors());
+
 app.use(express.json());
+app.use(cors());
 
-const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "MySQL@1234",
-    database: "order_management"
-});
+app.post("/transfer", async (req, res) => {
+    const { userId, merchantId, amount } = req.body;
 
-// Get Order History
-app.get("/orders", (req, res) => {
-    const sql = `
-    SELECT c.name, p.name AS product, o.quantity, o.total
-    FROM orders o
-    JOIN customers c ON o.customer_id = c.id
-    JOIN products p ON o.product_id = p.id`;
+    const connection = await db.getConnection();
 
-    db.query(sql, (err, result) => {
-        if (err) return res.send(err);
-        res.json(result);
-    });
-});
+    try {
+        await connection.beginTransaction();
 
-// Highest Order
-app.get("/highest", (req, res) => {
-    const sql = `SELECT * FROM orders
-    WHERE total = (SELECT MAX(total) FROM orders)`;
+        // 1. Check user balance
+        const [rows] = await connection.query(
+            "SELECT balance FROM users WHERE id = ?",
+            [userId]
+        );
 
-    db.query(sql, (err, result) => {
-        res.json(result);
-    });
-});
+        if (!rows.length || rows[0].balance < amount) {
+            throw new Error("Insufficient balance");
+        }
 
-// Most Active Customer
-app.get("/active", (req, res) => {
-    const sql = `
-    SELECT name FROM customers
-    WHERE id = (
-        SELECT customer_id FROM orders
-        GROUP BY customer_id
-        ORDER BY COUNT(*) DESC LIMIT 1
-    )`;
+        // 2. Deduct from user
+        await connection.query(
+            "UPDATE users SET balance = balance - ? WHERE id = ?",
+            [amount, userId]
+        );
 
-    db.query(sql, (err, result) => {
-        res.json(result);
-    });
+        // 3. Add to merchant
+        await connection.query(
+            "UPDATE merchants SET balance = balance + ? WHERE id = ?",
+            [amount, merchantId]
+        );
+
+        // 4. Commit transaction
+        await connection.commit();
+
+        res.send({ message: "Payment Successful" });
+
+    } catch (err) {
+        await connection.rollback();
+        res.status(400).send({ message: err.message });
+
+    } finally {
+        connection.release();
+    }
 });
 
 app.get("/", (req, res) => {
-    res.send("Order Management API is running");
+    res.send("Payment Simulation API is running successfully");
 });
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// ✅ IMPORTANT: server should start ONLY ONCE here
+app.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
